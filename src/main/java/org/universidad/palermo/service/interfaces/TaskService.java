@@ -2,17 +2,27 @@ package org.universidad.palermo.service.interfaces;
 
 import org.universidad.palermo.dto.request.CreateTaskRequest;
 import org.universidad.palermo.dto.request.UpdateTaskRequest;
+import org.universidad.palermo.dto.response.TaskResponse;
+import org.universidad.palermo.entities.Task;
+
+import java.util.List;
 
 public interface TaskService {
-    void CreateTask(CreateTaskRequest req);
+    TaskResponse CreateTask(CreateTaskRequest req);
 
-    void UpdateTask(UpdateTaskRequest req);
+    TaskResponse UpdateTask(UpdateTaskRequest req);
 
     void DeleteTask(Long taskNumber);
 
-    void GetTask(Long taskNumber);
+    TaskResponse GetTask(Long taskNumber);
 
-    void GetAllTasks();
+    List<TaskResponse> GetAllTasks();
 
-    void GetAllTasksByEmployee(Long employeeId);
+    List<TaskResponse> GetAllTasksByEmployee(Long employeeId);
+
+    int getTaskCount();
+
+    Boolean existsTask(Long taskNumber);
+
+    TaskResponse assignTask(Long taskNumber, Long employeeNumber);
 }

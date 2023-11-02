@@ -2,22 +2,29 @@ package org.universidad.palermo.service.interfaces;
 
 import org.universidad.palermo.dto.request.CreateEmployeeRequest;
 import org.universidad.palermo.dto.request.UpdateEmployeeRequest;
+import org.universidad.palermo.dto.response.EmployeeResponse;
 import org.universidad.palermo.entities.Employee;
 
 import java.util.List;
 
 public interface EmployeeService {
 
-    Employee create(CreateEmployeeRequest request);
+    EmployeeResponse create(CreateEmployeeRequest request);
 
-    Employee update(UpdateEmployeeRequest request);
+    EmployeeResponse update(UpdateEmployeeRequest request);
 
     void delete(Long nroEmpleado);
 
-    Employee get(Long nroEmpleado);
+    EmployeeResponse get(Long nroEmpleado);
 
-    List<Employee> getAll();
+    Employee getRaw(Long nroEmpleado);
 
-    List<Employee> getAll(boolean assigned);
+    List<EmployeeResponse> getAll();
+
+    List<EmployeeResponse> getAll(boolean assigned);
+
+    Long getEmployeeCount();
+
+    Boolean existsEmployee(Long nroEmpleado);
 
 }

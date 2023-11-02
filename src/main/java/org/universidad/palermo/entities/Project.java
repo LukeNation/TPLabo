@@ -24,4 +24,8 @@ public class Project {
                 this.employeeList = new ArrayList<>();
                 this.taskList = new ArrayList<>();
         }
+
+        public Boolean employeeAssigned(Long employeeNumber){
+                return employeeList.stream().anyMatch(e -> e.getEmployeeNumber().equals(employeeNumber));
+        }
 }

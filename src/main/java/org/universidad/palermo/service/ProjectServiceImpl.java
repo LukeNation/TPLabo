@@ -1,80 +1,113 @@
 package org.universidad.palermo.service;
 
-import lombok.RequiredArgsConstructor;
+import org.universidad.palermo.dao.interfaces.IProjectDao;
 import org.universidad.palermo.dto.request.CreateProjectRequest;
 import org.universidad.palermo.dto.request.UpdateProjectRequest;
+import org.universidad.palermo.dto.response.EmployeeResponse;
+import org.universidad.palermo.dto.response.ProjectResponse;
 import org.universidad.palermo.entities.Employee;
 import org.universidad.palermo.entities.Project;
+import org.universidad.palermo.mappers.EmployeeMapper;
 import org.universidad.palermo.mappers.ProjectMapper;
 import org.universidad.palermo.service.interfaces.EmployeeService;
 import org.universidad.palermo.service.interfaces.ProjectService;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-@RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
 
     private final EmployeeService employeeService;
 
-    private static Long projectNumber = 0L;
-    private static final Map<Long, Project> projects = new HashMap<>();
+    private Long projectNumber;
+    private final IProjectDao projects;
+
+    public ProjectServiceImpl(EmployeeService employeeService, IProjectDao projectDao) {
+        this.employeeService = employeeService;
+        this.projects = projectDao;
+        projectNumber = projects.count();
+
+    }
 
     @Override
-    public String create(CreateProjectRequest req) {
-        req.setProjectNumber(++projectNumber);
+    public ProjectResponse create(CreateProjectRequest req) {
         Project project = ProjectMapper.toEntity(req);
-        projects.put(projectNumber, project);
-        return "Project created successfully";
+        projects.save(project);
+
+        return ProjectMapper.toResponse(project);
     }
 
     @Override
-    public List<Project> getAll() {
-        return projects.values().stream().toList();
+    public List<ProjectResponse> getAll() {
+        return ProjectMapper.toResponseList(projects.findAll());
     }
 
     @Override
-    public String get(Long projectNumber) {
-        return projects.get(projectNumber).toString();
+    public ProjectResponse get(Long projectNumber) {
+        return ProjectMapper.toResponse(projects.findById(projectNumber));
     }
 
     @Override
     public void delete(Long projectNumber) {
-        projects.remove(projectNumber);
+        projects.delete(projectNumber);
     }
 
     @Override
-    public String update(UpdateProjectRequest req) {
-        Project project = projects.get(req.getProjectNumber());
+    public ProjectResponse update(UpdateProjectRequest req) {
+        Project project = projects.findById(req.getProjectNumber());
         if(project != null){
             ProjectMapper.updateEntity(req, project);
-            return "Project updated successfully";
+            projects.save(project);
+            return ProjectMapper.toResponse(project);
         }
-        return "Project not found";
+        return null;
     }
 
     @Override
-    public String addEmployee(Long projectNumber, Long employeeNumber) {
-        Project project = projects.get(projectNumber);
+    public ProjectResponse addEmployee(Long projectNumber, Long employeeNumber) {
+        Project project = projects.findById(projectNumber);
         if(project != null){
-            Employee employee = employeeService.get(employeeNumber);
+            Employee employee = employeeService.getRaw(employeeNumber);
             project.getEmployeeList().add(employee);
             employee.setAssigned(true);
-            return "Employee added successfully";
+            return ProjectMapper.toResponse(project);
         }
-        return "Project not found";
+        return null;
     }
 
     @Override
-    public String removeEmployee(Long projectNumber, Long employeeNumber) {
-        Project project = projects.get(projectNumber);
+    public ProjectResponse removeEmployee(Long projectNumber, Long employeeNumber) {
+        Project project = projects.findById(projectNumber);
         if(project != null){
-            Employee employee = employeeService.get(employeeNumber);
+            Employee employee = employeeService.getRaw(employeeNumber);
             project.getEmployeeList().remove(employee);
             employee.setAssigned(false);
-            return "Employee removed successfully";
+            return ProjectMapper.toResponse(project);
         }
-        return "Project not found";
+        return null;
     }
+
+    @Override
+    public List<EmployeeResponse> getEmployeeList(Long projectNumber){
+        Project project = projects.findById(projectNumber);
+        if(project != null){
+            return EmployeeMapper.toResponseList(project.getEmployeeList());
+        }
+        return null;
+    }
+
+    @Override
+    public Long getProjectCount(){
+        return projects.count();
+    }
+
+    @Override
+    public Integer getEmployeeCount(Long projectNumber){
+        return projects.countEmployeesInProject(projectNumber);
+    }
+
+    @Override
+    public boolean existsProject(Long projectNumber){
+        return projects.exists(projectNumber);
+    }
+
 }
