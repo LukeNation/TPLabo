@@ -25,7 +25,7 @@ public class TaskStatusMapper implements Mapper<TaskStatus>{
             status.setId(rs.getLong("id"));
             status.setTaskNumber(rs.getLong("task_number"));
             status.setStatus(rs.getInt("status"));
-            status.setDescription(rs.getString("description"));
+            status.setDescription(rs.getString("descripcion"));
             status.setChangeDate(rs.getDate("date"));
             status.setEmployee(rs.getLong("employee"));
             statusList.add(status);

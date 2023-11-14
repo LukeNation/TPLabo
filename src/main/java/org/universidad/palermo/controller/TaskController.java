@@ -27,7 +27,7 @@ public class TaskController implements Controller {
         taskService.deleteTask(taskNumber);
     }
 
-    public TaskResponse GetTask(Long taskNumber) {
+    public TaskResponse getTask(Long taskNumber) {
         return taskService.GetTask(taskNumber);
     }
 
