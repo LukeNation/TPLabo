@@ -1,22 +1,35 @@
 package org.universidad.palermo;
 
-import org.universidad.palermo.controller.EmployeeController;
-import org.universidad.palermo.controller.ProjectController;
-import org.universidad.palermo.dto.request.CreateEmployeeRequest;
-import org.universidad.palermo.dto.request.CreateProjectRequest;
-import org.universidad.palermo.dto.request.UpdateEmployeeRequest;
-import org.universidad.palermo.util.MasterProjectManager;
+
+import org.universidad.palermo.views.EmployeeView;
+import org.universidad.palermo.views.MainFrame;
+import org.universidad.palermo.views.ProjectsView;
+import org.universidad.palermo.views.TaskView;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class Main {
+
+    public static JPanel mainPanel =  new JPanel();
+    public static ProjectsView projectsView = new ProjectsView();
+    public static EmployeeView employeeView = new EmployeeView();
+    public static TaskView taskView = new TaskView();
+    private static JFrame frame = new JFrame("Luke Portal");
     public static void main(String[] args) {
 
-        EmployeeController employeeController = MasterProjectManager.getEmployeeController();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(500,500);
 
-        CreateEmployeeRequest request = new CreateEmployeeRequest();
-        request.setName("name");
-        request.setLastName("lastName");
-        request.setSalary(1000.0);
-        employeeController.createEmployee(request);
+        mainPanel.setLayout(new CardLayout());
+        mainPanel.add(new MainFrame().getMainPanel(),"menuPrincipal");
+        mainPanel.add(projectsView.getPanel(),"projectsView");
+        mainPanel.add(employeeView.getPanel(),"employeesView");
+        mainPanel.add(taskView.getPanel(),"tasksView");
 
-        }
+        frame.setLocationRelativeTo(null);
+        frame.getContentPane().add(mainPanel);
+        frame.setVisible(true);
+    }
+
 }

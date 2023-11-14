@@ -4,14 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.universidad.palermo.dto.request.CreateEmployeeRequest;
 import org.universidad.palermo.dto.request.UpdateEmployeeRequest;
 import org.universidad.palermo.dto.response.EmployeeResponse;
-import org.universidad.palermo.entities.Employee;
 import org.universidad.palermo.service.interfaces.EmployeeService;
 
 import java.util.List;
-import java.util.Scanner;
 
 @RequiredArgsConstructor
-public class EmployeeController {
+public class EmployeeController implements Controller {
 
     private final EmployeeService employeeService;
 
@@ -23,7 +21,7 @@ public class EmployeeController {
         return employeeService.update(request);
     }
 
-    public void deleteEmployee(Long nroEmpleado) {
+    public void delete(Long nroEmpleado) {
         employeeService.delete(nroEmpleado);
     }
 

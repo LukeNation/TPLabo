@@ -9,4 +9,6 @@ public class CreateTaskRequest {
     private String title;
     private String description;
     private Double estimatedHours;
+    private Long projectNumber;
+    private Long employeeNumber;
 }

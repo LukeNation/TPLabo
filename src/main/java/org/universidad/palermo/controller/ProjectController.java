@@ -2,15 +2,17 @@ package org.universidad.palermo.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.universidad.palermo.dto.request.CreateProjectRequest;
+import org.universidad.palermo.dto.request.CreateTaskRequest;
 import org.universidad.palermo.dto.request.UpdateProjectRequest;
 import org.universidad.palermo.dto.response.EmployeeResponse;
 import org.universidad.palermo.dto.response.ProjectResponse;
+import org.universidad.palermo.dto.response.TaskResponse;
 import org.universidad.palermo.service.interfaces.ProjectService;
 
 import java.util.List;
 
 @RequiredArgsConstructor
-public class ProjectController {
+public class ProjectController implements Controller{
 
     private final ProjectService projectService;
 
@@ -22,7 +24,7 @@ public class ProjectController {
        return projectService.update(req);
     }
 
-    public void deleteProject(Long projectNumber) {
+    public void delete(Long projectNumber) {
         projectService.delete(projectNumber);
     }
 
@@ -44,6 +46,14 @@ public class ProjectController {
 
     public List<EmployeeResponse> getEmployees(Long projectNumber) {
        return projectService.getEmployeeList(projectNumber);
+    }
+
+    public TaskResponse createTask(Long projectNumber, CreateTaskRequest request) {
+        return projectService.createTask(projectNumber, request);
+    }
+
+    public List<TaskResponse> getTasks(Long projectNumber) {
+        return projectService.getTasks(projectNumber);
     }
 
 }

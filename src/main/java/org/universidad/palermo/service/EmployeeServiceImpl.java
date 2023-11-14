@@ -12,26 +12,26 @@ import java.util.List;
 
 public class EmployeeServiceImpl implements EmployeeService {
 
-    private Long employeeNumber;
+    private final EmployeeMapper employeeMapper;
     private final IEmployeeDao employeeDao;
 
-    public EmployeeServiceImpl(IEmployeeDao employeeDao) {
+    public EmployeeServiceImpl(IEmployeeDao employeeDao, EmployeeMapper employeeMapper) {
         this.employeeDao = employeeDao;
-        employeeNumber = employeeDao.count();
+        this.employeeMapper = employeeMapper;
     }
 
     @Override
     public EmployeeResponse create(CreateEmployeeRequest request) {
-        Employee employee = EmployeeMapper.updateEntity(++employeeNumber,request);
-        return EmployeeMapper.toResponse(employeeDao.save(employee));
+        Employee employee = employeeMapper.updateEntity(request);
+        return employeeMapper.toResponse(employeeDao.save(employee));
     }
 
     @Override
     public EmployeeResponse update(UpdateEmployeeRequest request) {
         Employee employee = employeeDao.findById(request.getEmployeeNumber());
         if(employee != null) {
-            EmployeeMapper.updateEntity(employee, request);
-            return EmployeeMapper.toResponse(employeeDao.save(employee));
+            employeeMapper.updateEntity(employee, request);
+            return employeeMapper.toResponse(employeeDao.update(employee));
         }
         return null;
     }
@@ -43,7 +43,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeResponse get(Long nroEmpleado) {
-        return EmployeeMapper.toResponse(getRaw(nroEmpleado));
+        return employeeMapper.toResponse(getRaw(nroEmpleado));
     }
 
     @Override
@@ -53,12 +53,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeResponse> getAll() {
-       return employeeDao.findAll().stream().map(EmployeeMapper::toResponse).toList();
+       return employeeDao.findAll().stream().map(employeeMapper::toResponse).toList();
     }
 
     @Override
     public List<EmployeeResponse> getAll(boolean assigned) {
-      return employeeDao.findAll(assigned).stream().map(EmployeeMapper::toResponse).toList();
+      return employeeDao.findAll(assigned).stream().map(employeeMapper::toResponse).toList();
     }
 
     @Override
@@ -69,6 +69,24 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Boolean existsEmployee(Long nroEmpleado) {
         return employeeDao.exists(nroEmpleado);
+    }
+
+    @Override
+    public void assignEmployee(Long employeeNumber) {
+        Employee employee = employeeDao.findById(employeeNumber);
+        if(employee != null){
+            employee.setAssigned(true);
+            employeeDao.update(employee);
+        }
+    }
+
+    @Override
+    public void unAssignEmployee(Long employeeNumber) {
+        Employee employee = employeeDao.findById(employeeNumber);
+        if(employee != null){
+            employee.setAssigned(false);
+            employeeDao.update(employee);
+        }
     }
 
 }

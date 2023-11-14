@@ -1,84 +1,122 @@
 package org.universidad.palermo.service;
 
 import lombok.RequiredArgsConstructor;
+import org.universidad.palermo.dao.TaskStatusDao;
+import org.universidad.palermo.dao.interfaces.ITaskDao;
+import org.universidad.palermo.dao.interfaces.ITaskStatusDao;
 import org.universidad.palermo.dto.request.CreateTaskRequest;
 import org.universidad.palermo.dto.request.UpdateTaskRequest;
 import org.universidad.palermo.dto.response.TaskResponse;
+import org.universidad.palermo.dto.response.TaskStatusResponse;
 import org.universidad.palermo.entities.Task;
+import org.universidad.palermo.entities.TaskStatus;
+import org.universidad.palermo.enums.TaskStatusEnum;
 import org.universidad.palermo.mappers.TaskMapper;
+import org.universidad.palermo.mappers.TaskStatusMapper;
 import org.universidad.palermo.service.interfaces.EmployeeService;
 import org.universidad.palermo.service.interfaces.TaskService;
 
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
 
     private final EmployeeService employeeService;
-    private Long taskNumber = 0L;
-    private final Map<Long, Task> tasks = new HashMap<>();
+    private final ITaskDao tasksDao;
+    private final ITaskStatusDao tasksStatusDao;
+
+    private final TaskMapper taskMapper;
+    private final TaskStatusMapper taskStatusMapper;
 
     @Override
-    public TaskResponse CreateTask(CreateTaskRequest req) {
-        Task task = TaskMapper.toEntity(++taskNumber,req);
-        tasks.put(taskNumber, task);
+    public TaskResponse createTask(CreateTaskRequest req) {
+        Task task = taskMapper.toEntity(req);
+        tasksDao.save(task);
         System.out.println("Task created successfully");
-        return TaskMapper.toResponse(task);
+        updateTaskStatus(task.getTaskNumber(), TaskStatusEnum.getStatus(task.getStatus()), "tarea creada");
+        return taskMapper.toResponse(task);
     }
 
     @Override
     public TaskResponse UpdateTask(UpdateTaskRequest req) {
-        Task task = tasks.get(req.getTaskNumber());
+        Task task = tasksDao.findById(req.getTaskNumber());
         if(task != null) {
-            TaskMapper.updateEntity(task, req);
+            taskMapper.updateEntity(task, req);
+            tasksDao.update(task);
+            updateTaskStatus(req.getTaskNumber(), TaskStatusEnum.getStatus(task.getStatus()), "tarea actualizada");
             System.out.println("Task updated successfully");
-            return TaskMapper.toResponse(task);
+            return taskMapper.toResponse(task);
         }
         System.out.println("Task not found");
         return null;
     }
 
     @Override
-    public void DeleteTask(Long taskNumber) {
-        tasks.remove(taskNumber);
+    public void deleteTask(Long taskNumber) {
+        updateTaskStatus(taskNumber, TaskStatusEnum.DELETED, "tarea eliminada");
+        tasksDao.delete(taskNumber);
     }
 
     @Override
     public TaskResponse GetTask(Long taskNumber) {
-        return TaskMapper.toResponse(tasks.get(taskNumber));
+        return taskMapper.toResponse(tasksDao.findById(taskNumber));
     }
 
     @Override
     public List<TaskResponse> GetAllTasks() {
-        return TaskMapper.toResponseList(tasks.values().stream().toList());
+        return taskMapper.toResponseList(tasksDao.findAll());
     }
 
     @Override
     public List<TaskResponse> GetAllTasksByEmployee(Long employeeId) {
-        List<Task> taskList = tasks.values().stream().filter(task -> task.getAssignedEmployee().getEmployeeNumber().equals(employeeId)).collect(Collectors.toList());
-        return TaskMapper.toResponseList(taskList);
+        List<Task> taskList = tasksDao.findAllByEmployee(employeeId);
+        return taskMapper.toResponseList(taskList);
     }
 
     @Override
-    public int getTaskCount() {
-        return tasks.size();
+    public Long getTaskCount() {
+        return tasksDao.count();
     }
 
     @Override
     public Boolean existsTask(Long taskNumber) {
-        return tasks.containsKey(taskNumber);
+        return tasksDao.exists(taskNumber);
     }
 
     @Override
     public TaskResponse assignTask(Long taskNumber, Long employeeNumber) {
-        Task task = tasks.get(taskNumber);
+        Task task = tasksDao.findById(taskNumber);
         if(task != null){
-            task.setAssignedEmployee(employeeService.getRaw(employeeNumber));
-            return TaskMapper.toResponse(task);
+            task.setAssignedEmployee(employeeNumber);
+            tasksDao.update(task);
+            updateTaskStatus(taskNumber, TaskStatusEnum.getStatus(task.getStatus()), "tarea asignada");
+            return taskMapper.toResponse(task);
         }
         return null;
+    }
+
+    @Override
+    public List<TaskResponse> getTaskByProject(Long projectNumber) {
+        return taskMapper.toResponseList(tasksDao.findAllByProject(projectNumber));
+    }
+
+    @Override
+    public TaskStatusResponse updateTaskStatus(Long taskNumber, TaskStatusEnum status, String message) {
+        Task task = tasksDao.findById(taskNumber);
+        if(task != null){
+            task.setStatus(status.getStatus());
+            tasksDao.update(task);
+            TaskStatus taskStatus = taskStatusMapper.toHistoric(task, message);
+            tasksStatusDao.save(taskStatus);
+            return taskStatusMapper.toResponse(taskStatus,employeeService.get(taskStatus.getEmployee()));
+        }
+        return null;
+    }
+
+    @Override
+    public List<TaskStatusResponse> getHistoric(Long taskNumber) {
+        List<TaskStatus>taskStatusList = tasksStatusDao.getHistoric(taskNumber);
+        return taskStatusList.stream().map(taskStatus -> taskStatusMapper.toResponse(taskStatus,employeeService.get(taskStatus.getEmployee()))).sorted((Comparator.comparing(TaskStatusResponse::getChangeDate))).toList();
     }
 }

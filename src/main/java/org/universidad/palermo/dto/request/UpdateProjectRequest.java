@@ -8,4 +8,5 @@ public class UpdateProjectRequest {
     private Long projectNumber;
     private String title;
     private String description;
+    private int status;
 }

@@ -5,7 +5,7 @@ import lombok.ToString;
 
 @Data
 @ToString
-public class Employee {
+public class Employee implements Entity{
 
     private Long EmployeeNumber;
     @ToString.Exclude

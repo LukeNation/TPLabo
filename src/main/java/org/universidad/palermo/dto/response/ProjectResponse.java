@@ -1,8 +1,6 @@
 package org.universidad.palermo.dto.response;
 
 import lombok.Data;
-import org.universidad.palermo.entities.Employee;
-import org.universidad.palermo.entities.Task;
 
 import java.util.List;
 

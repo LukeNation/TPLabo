@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class Project {
+public class Project implements Entity {
 
         private Long projectNumber;
         private String title;

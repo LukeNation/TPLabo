@@ -27,4 +27,8 @@ public interface EmployeeService {
 
     Boolean existsEmployee(Long nroEmpleado);
 
+    void assignEmployee(Long employeeNumber);
+
+    void unAssignEmployee(Long employeeNumber);
 }
+
