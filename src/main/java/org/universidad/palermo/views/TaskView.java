@@ -8,6 +8,7 @@ import org.universidad.palermo.dto.response.EmployeeResponse;
 import org.universidad.palermo.dto.response.ProjectResponse;
 import org.universidad.palermo.dto.response.TaskResponse;
 import org.universidad.palermo.dto.response.TaskStatusResponse;
+import org.universidad.palermo.enums.TaskStatusEnum;
 import org.universidad.palermo.util.MasterProjectManager;
 
 import javax.swing.*;
@@ -97,12 +98,12 @@ public class TaskView {
         model.fireTableDataChanged();
     }
 
-    public static Action toModify = new AbstractAction() {
+    public Action toModify = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            JLabel nroEmpleadoLabel = new JLabel("nro tarea");
-            JTextField nroEmpleado = new JTextField();
+            JLabel nroTarea = new JLabel("nro tarea");
+            JTextField tarea = new JTextField();
 
             JLabel tituloLabel = new JLabel("Titulo");
             JTextField titulo = new JTextField();
@@ -116,17 +117,39 @@ public class TaskView {
             JLabel tiempoRealLabel = new JLabel("tiempo real");
             JTextField tiempoReal = new JTextField();
 
+            JLabel taskStatusLabel = new JLabel("estado");
+            JComboBox<String> taskStatus = new JComboBox<>();
+            for(TaskStatusEnum tse : TaskStatusEnum.values()){
+                taskStatus.addItem(tse.getStatus() + " - " + tse.getDescription());
+            }
+
+            int row = Main.taskView.tareas.getSelectedRow();
+            if (row != -1) {
+                Long taskNumber = (Long) Main.taskView.tareas.getValueAt(row, 0);
+                TaskResponse task = MasterProjectManager.getTaskController().getTask(taskNumber);
+                if (task != null) {
+                    tarea.setText(task.getTaskNumber().toString());
+                    titulo.setText(task.getTitle());
+                    descripcion.setText(task.getDescription());
+                    tiempoEstimado.setText(task.getEstimatedHours().toString());
+                    tiempoReal.setText(task.getWorkedHours().toString());
+                    taskStatus.setSelectedItem(TaskStatusEnum.getStatusDescription(task.getStatus()).getStatus() + " - " + task.getStatus());
+                }
+            }
+
             JFrame frame = new JFrame("Modificar Tarea");
             JButton save = new JButton("Guardar");
             save.setAction(new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     UpdateTaskRequest request = new UpdateTaskRequest();
-                    request.setTaskNumber(Long.parseLong(nroEmpleado.getText()));
+                    request.setTaskNumber(Long.parseLong(tarea.getText()));
                     request.setTitle(titulo.getText());
                     request.setDescription(descripcion.getText());
+
                     request.setEstimatedHours(Double.parseDouble(tiempoEstimado.getText()));
                     request.setWorkedHours(Double.parseDouble(tiempoReal.getText()));
+                    request.setStatus(Integer.parseInt(taskStatus.getItemAt(taskStatus.getSelectedIndex()).split(" - ")[0]));
                     MasterProjectManager.getTaskController().UpdateTask(request);
                     Main.taskView.updateTable();
                     frame.dispose();
@@ -142,9 +165,9 @@ public class TaskView {
             });
 
             JPanel panel = new JPanel();
-            panel.setLayout(new GridLayout(6, 2, 10, 10));
-            panel.add(nroEmpleadoLabel);
-            panel.add(nroEmpleado);
+            panel.setLayout(new GridLayout(7, 2, 10, 10));
+            panel.add(nroTarea);
+            panel.add(tarea);
             panel.add(tituloLabel);
             panel.add(titulo);
             panel.add(descripcionLabel);
@@ -153,12 +176,14 @@ public class TaskView {
             panel.add(tiempoEstimado);
             panel.add(tiempoRealLabel);
             panel.add(tiempoReal);
+            panel.add(taskStatusLabel);
+            panel.add(taskStatus);
             panel.add(cancel);
             panel.add(save);
             save.setText("Guardar");
             cancel.setText("Cancelar");
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            frame.setSize(300, 200);
+            frame.setSize(300, 250);
             frame.getContentPane().add(panel);
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);

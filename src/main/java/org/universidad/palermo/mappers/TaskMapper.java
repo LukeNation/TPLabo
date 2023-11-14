@@ -36,6 +36,7 @@ public class TaskMapper implements Mapper<Task> {
         task.setDescription(req.getDescription()==null? task.getDescription() : req.getDescription());
         task.setEstimatedHours(req.getEstimatedHours()==null? task.getEstimatedHours() :req.getEstimatedHours());
         task.setWorkedHours(req.getWorkedHours()==null? task.getWorkedHours() :req.getWorkedHours());
+        task.setStatus(req.getStatus()==null? task.getStatus() :req.getStatus());
     }
 
     public TaskResponse toResponse(Task task) {

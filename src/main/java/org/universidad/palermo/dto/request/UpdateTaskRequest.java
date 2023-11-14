@@ -9,4 +9,5 @@ public class UpdateTaskRequest {
     private String description;
     private Double estimatedHours;
     private Double workedHours;
+    private Integer status;
 }
